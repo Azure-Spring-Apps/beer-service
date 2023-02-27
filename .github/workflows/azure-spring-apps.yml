@@ -1,0 +1,37 @@
+name: Deploy to Azure Spring Apps
+
+on: 
+  push:
+    branches: ["main"]
+
+env:
+  ASC_PACKAGE_PATH: ${{ github.workspace }}
+  AZURE_SUBSCRIPTION: d611a8ae-45e6-4f08-8353-572e149ff4c7
+  AZURE_SPRING_APPS: production
+  APP_NAME: beer-service
+
+jobs:
+  deploy_to_production:
+    name: Deploy to production with source code
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+
+      - name: Checkout GitHub Action
+        uses: actions/checkout@v2
+
+      - name: Login via Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Spring Apps with source code
+        uses: azure/spring-apps-deploy@v1
+        with:
+          azure-subscription: ${{ env.AZURE_SUBSCRIPTION }}
+          action: deploy
+          service-name: ${{ env.AZURE_SPRING_APPS }}
+          app-name: ${{ env.APP_NAME }}
+          package: ${{ env.ASC_PACKAGE_PATH }}
+          build-env: "-BP_JVM_VERSION 17"
+          use-staging-deployment: false
